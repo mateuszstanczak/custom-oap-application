@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: white;
+        }
+
+        canvas {
+            background-color: lightgreen;
+            border: 1px solid #000;
+        }
+
+        #score {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+    <title>Ping Pong Game</title>
+</head>
+<body>
+    <canvas id="pingPongCanvas" width="800" height="400"></canvas>
+    <div id="score">0 : 0</div>
+
+    <script>
+        const canvas = document.getElementById("pingPongCanvas");
+        const context = canvas.getContext("2d");
+        const scoreDisplay = document.getElementById("score");
+
+        const paddleWidth = 10;
+        const paddleHeight = 60;
+        const paddleSpeed = 6;
+        const ballSize = 10;
+
+        let playerY = canvas.height / 2 - paddleHeight / 2;
+        let computerY = canvas.height / 2 - paddleHeight / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
+
+        let playerScore = 0;
+        let computerScore = 0;
+
+function draw() {
+                            
+            context.fillStyle = "lightgreen";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            context.fillStyle = "blue";
+            context.fillRect(0, playerY, paddleWidth, paddleHeight);
+
+            context.fillStyle = "red";
+            context.fillRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight);
+
+         
+            context.fillStyle = "black";
+            context.beginPath();
+            context.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+            context.fill();
+
+            
+            scoreDisplay.textContent = `${playerScore} : ${computerScore}`;
+        }
+
+        function update() {
+            // Move computer paddle
+            if (ballY > computerY + paddleHeight / 2) {
+                computerY += paddleSpeed;
+            } else {
+                computerY -= paddleSpeed;
+            }
+
+          
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+           
+            if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            
+            if (
+                (ballX - ballSize < paddleWidth && ballY > playerY && ballY < playerY + paddleHeight) ||
+                (ballX + ballSize > canvas.width - paddleWidth && ballY > computerY && ballY < computerY + paddleHeight)
+            ) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+           
+            if (ballX - ballSize < 0) {
+                computerScore++;
+                resetBall();
+            } else if (ballX + ballSize > canvas.width) {
+                playerScore++;
+                resetBall();
+            }
+
+            
+            if (playerScore === 10) {
+                gameOver("WIN");
+            } else if (computerScore === 10) {
+                gameOver("GAME OVER");
+            }
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+        }
+
+        function gameOver(outcome) {
+            alert(`${outcome} - Final Score: ${playerScore} : ${computerScore}`);
+            playerScore = 0;
+            computerScore = 0;
+            resetBall();
+        }
+
+        function handleMouse(e) {
+            const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+            playerY = mouseY - paddleHeight / 2;
+
+           
+            if (playerY < 0) {
+                playerY = 0;
+            } else if (playerY + paddleHeight > canvas.height) {
+                playerY = canvas.height - paddleHeight;
+            }
+        }
+
+        canvas.addEventListener("mousemove", handleMouse);
+
+        function gameLoop() {
+            draw();
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
+
